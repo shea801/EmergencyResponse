@@ -264,7 +264,9 @@ def test_heatmap_uses_weighted_incidents_and_roads() -> None:
     assert list(figure.data[0].z) == [3, 1]
     assert figure.data[0].zmin == 0
     assert figure.data[0].zmax == 10
-    assert figure.data[0].radius == 30
+    assert figure.data[0].radius == 10
+    assert figure.data[0].colorscale[0][1] == "rgb(3, 5, 18)"
+    assert figure.data[0].colorscale[-1][1] == "rgb(234, 252, 253)"
 
 
 def test_empty_database_and_spreadsheet_safe_export(tmp_path: Path) -> None:

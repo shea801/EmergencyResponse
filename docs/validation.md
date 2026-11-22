@@ -1,12 +1,16 @@
 # Validation record — 25 October 2026
 
+## November 22, 2026 — dependency and map alignment
+
+A fresh Python 3.14.3 environment installed the constrained editable package, passed `pip check`, and ran 14 tests successfully. The active-database shell, layout, and callbacks for all seven views returned HTTP 200. The map radius, test, on-screen explanation, and metrics document now agree at 10 pixels; the legend uses the map's blue-to-white `ice` colors. A headless Chrome capture with synthetic incidents showed road tiles and the legend but no visible density layer, so visual map review remains open. Ruff still reports four import-order findings and nine files needing formatting. Python 3.11 execution remains unverified.
+
 ## October 26, 2026 — summary export support
 
 Ruff lint and format checks pass, and the expanded suite reports **14 passed** on the configured Python 3.14 interpreter. New independent fixtures cover both filename styles and capitalization, the double-period filename, ignored unrelated files, header aliases/collisions, ISO date parsing, detailed/summary overlap in either import order, retained detailed fields, unchanged reimports, same-date different incident identities, genuine conflicts, partial records that must not mask detailed conflicts, exact duplicate source-row resolutions, later corrections, first-only apparatus filters, unknown field counts, and exports that disclose completeness without including personnel/editor values. Existing functional and dashboard tests continue to pass. The existing Dash DataTable deprecation warnings remain.
 
 All 33 real files were imported into a temporary copy of the existing schema-3 database. File reports reconciled, no rows were invalid, and the result was 14,131 canonical incidents, 17,283 reported unit responses, and 17 unresolved identities. A second import classified every input row as a duplicate and left canonical totals and data version unchanged. SQLite integrity checking returned `ok`. The 17 conflicts comprise the original disputed identity and 16 additional identities with differing supplied observations; omitted summary columns and date text formatting did not create conflicts.
 
-After that trial, the active database was backed up to `data/before-summary-import-20261026-100645.sqlite3` and all files were imported. The active totals match the trial. `data/summary-import-report.jsonl` contains per-file reports and `data/new-format-verification.json` records the trial summary. Historical validation below describes the earlier 22-file dataset, not the enlarged current population. This update does not close the previously documented Python 3.10, visual-review, or department-policy release gates.
+After that trial, the active database was backed up to `data/before-summary-import-20261026-100645.sqlite3` and all files were imported. The active totals match the trial. `data/summary-import-report.jsonl` contains per-file reports and `data/new-format-verification.json` records the trial summary. Historical validation below describes the earlier 22-file dataset, not the enlarged current population. This update does not close the Python 3.11, visual-review, or department-policy release gates.
 
 On the enlarged active database, the application shell, layout, dependencies, and callbacks for all seven views returned HTTP 200 through the local Flask test client. Each view included the notice identifying 4,645 selected incidents without participation lists. Callback measurements were approximately 1.65–1.84 seconds on the configured environment; these are server checks, not browser-render measurements. Active SQLite integrity checking returned `ok`.
 
@@ -24,7 +28,7 @@ python -m ruff format --check .   All maintained files formatted
 python -m pytest -q              7 passed
 ```
 
-Dash 4.2 emits a deprecation warning for its built-in `dash_table.DataTable`; this does not affect current test results and should be addressed when upgrading Dash. Maintained Python source and tests also parsed with Python 3.10 syntax mode. The installed dependency graph's `Requires-Python` metadata was checked and all resolved versions allow Python 3.10, but no Python 3.10 interpreter was available for execution. Python 3.14.3 is the exercised deployment version. The documented standard editable install with constraints succeeded in the configured environment and a fresh temporary virtual environment when PyPI access was available. `pip check` in the fresh environment found no broken requirements; an isolated import path using only its installed packages loaded the dashboard layout (HTTP 200) and audited the project database. The CLI also audited correctly from `/private/tmp`.
+Dash 4.2 emits a deprecation warning for its built-in `dash_table.DataTable`; this does not affect current test results and should be addressed when upgrading Dash. Maintained Python source and tests also parsed with Python 3.10 syntax mode. The current NumPy and pandas pins require Python 3.11 or newer; no Python 3.11 interpreter was available for execution. Python 3.14.3 is the exercised deployment version. The documented standard editable install with constraints succeeded in the configured environment and a fresh temporary virtual environment when PyPI access was available. `pip check` in the fresh environment found no broken requirements; an isolated import path using only its installed packages loaded the dashboard layout (HTTP 200) and audited the project database. The CLI also audited correctly from `/private/tmp`.
 
 ## Supplied-data and operational checks
 
@@ -42,4 +46,4 @@ The native computer-use service failed during attempts to capture the legacy das
 
 ## Release decision
 
-The application is a functional incident-analysis MVP candidate. Department review is still required for identity scope and the disputed source version, timestamp semantics, company mappings, coordinate provenance, and export coverage. Python 3.10 execution, browser visual review, and final performance sign-off remain release gates. Missing First Due timing reports are an accepted scope limitation, not a release gate.
+The application is a functional incident-analysis MVP candidate. Department review is still required for identity scope and the disputed source version, timestamp semantics, company mappings, coordinate provenance, and export coverage. Python 3.11 execution, browser visual review, and final performance sign-off remain release gates. Missing First Due timing reports are an accepted scope limitation, not a release gate.

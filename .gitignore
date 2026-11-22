@@ -16,6 +16,5 @@ reference_screenshots/
 *.ipynb
 incident_reports/
 latitude_longitude_addresses.json
-dfd_dashboard/migrations
 EXTRICATIONREADME.md
 

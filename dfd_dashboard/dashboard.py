@@ -484,7 +484,7 @@ def _view_content(
             html.P(
                 f"{result['located']:,} of {result['incidents']:,} selected incidents mapped "
                 f"({result['mapping_percent']}%). The heatmap above weights each exact normalized "
-                "address by distinct incident count; nearby addresses blend within a 30-pixel radius. "
+                "address by distinct incident count; nearby addresses blend within a 10-pixel radius. "
                 "Display intensity saturates above ten incidents at one address. "
                 "Cached coordinate provenance is unverified."
             ),

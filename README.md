@@ -4,7 +4,7 @@ Local Dash dashboard for exploratory analysis of the accessible First Due incide
 
 ## Quick start on macOS
 
-Use Python 3.10 or newer. Python 3.14.3 and the versions in `constraints.txt` were exercised in this project. From the project root:
+Use Python 3.11 through 3.14. Python 3.14.3 and the versions in `constraints.txt` were exercised in this project. From the project root:
 
 ```sh
 python3 -m venv .venv
@@ -16,7 +16,7 @@ python3 -m venv .venv
 
 Open <http://127.0.0.1:8050/>. `serve` binds to localhost and disables Dash debug mode. Keep the terminal running while using the dashboard. An explicit database can be selected with `--database /path/to/database.sqlite3` before the subcommand, or with `DFD_DB_PATH`; relative paths resolve from the project root. Source, configuration, and asset paths do not depend on the shell's working directory. Imports are explicit; the dashboard does not watch the export directory.
 
-The same installation without test tools is `.venv/bin/python -m pip install -c constraints.txt -e .`. To update dependencies, edit the bounds in `pyproject.toml`, resolve and test on the supported Python versions, then update `constraints.txt` with the verified versions. `constraints.txt` pins the resolved runtime, build, and development dependency graph from the tested environment. The standard editable installation succeeded in both the configured and a fresh temporary environment with PyPI access. Python 3.10 execution remains a release check.
+The same installation without test tools is `.venv/bin/python -m pip install -c constraints.txt -e .`. Update dependency bounds in `pyproject.toml` and verified pins in `constraints.txt` together. The pinned installation passed `pip check` and the test suite in a fresh Python 3.14.3 environment. Python 3.11 execution remains a release check.
 
 ## Daily use
 

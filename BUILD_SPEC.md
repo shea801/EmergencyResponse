@@ -24,7 +24,7 @@ Results must make data limitations visible. Incident frequency and apparatus par
 
 - Keep application source, documentation, configuration, tests, and project-managed runtime files under the project directory. The Python installation and installed third-party packages may reside outside it.
 - Resolve data and asset paths relative to the project root or explicit configuration, independently of the shell's current working directory.
-- Use Python code compatible with Python 3.10 or higher. Declare the tested Python version range and dependency versions in `pyproject.toml`; verify the minimum version and selected deployment version before release.
+- Use Python 3.11 through 3.14. Declare the tested Python version range and dependency versions in `pyproject.toml`; verify the minimum version and selected deployment version before release.
 - Retain Dash, Plotly, and Dash Bootstrap Components for the initial implementation.
 - Use SQLite for the local MVP database. Reassess the database and hosting architecture before introducing shared deployment or concurrent importing users.
 - Start the dashboard through a documented CLI command that launches a local web interface. Bind to localhost by default, with debug mode disabled for normal use.
@@ -44,7 +44,7 @@ The starting implementation consists of `main.py`, `app.py`, `Incident_Data.py`,
 Create `pyproject.toml` at the project root as the central project and Python-tool configuration file, following the [Python Packaging User Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/).
 
 - Define the build backend in `[build-system]` and project name, version, description, README, Python requirement, and runtime dependencies in `[project]`.
-- Set `requires-python = ">=3.10"` and keep dependency choices compatible with the declared and tested Python versions.
+- Set `requires-python = ">=3.11,<3.15"` and keep dependency choices compatible with the declared and tested Python versions.
 - Define the supported CLI entry point in `[project.scripts]` once the application package is established.
 - Separate development/test dependencies, including Ruff and the selected test runner, from runtime dependencies using a documented development dependency group or extra.
 - Store Ruff settings in `[tool.ruff]`, `[tool.ruff.lint]`, and `[tool.ruff.format]`. Store test-runner settings here when the selected runner supports it.
@@ -56,7 +56,7 @@ Create `pyproject.toml` at the project root as the central project and Python-to
 Use Ruff as the required Python linter, import organizer, and formatter. Configure it centrally using the [Ruff configuration documentation](https://docs.astral.sh/ruff/configuration/) and [formatter documentation](https://docs.astral.sh/ruff/formatter/).
 
 - Include Ruff in the reproducible development environment and record its resolved version with the other development tools.
-- Set `target-version = "py310"`, `line-length = 100`, and four-space indentation. Use double-quoted strings and space indentation in the formatter configuration.
+- Set `target-version = "py310"`, `line-length = 79`, and four-space indentation. Use double-quoted strings and space indentation in the formatter configuration.
 - Enable lint rule families `E4`, `E7`, `E9`, `F`, `I`, and `UP` for basic errors, unused names/imports, import ordering, and Python modernization compatible with the target version.
 - Apply checks to maintained Python application code, tests, and project utilities. Exclude virtual environments, caches, build output, generated files, and historical exploratory notebooks unless those notebooks are explicitly adopted as maintained project code.
 - Use narrow, documented exceptions when needed. Do not disable checks broadly to make failing code pass. Review automatic fixes for behavior changes and do not enable unsafe fixes by default.

@@ -9,4 +9,4 @@
 - Repeat locations identify candidates only. Official target-hazard designation requires approved criteria and other risk sources.
 - Localhost access assumes an authorized local user. Shared hosting, accounts, and concurrent importing are deferred.
 - The road basemap needs browser access to OpenStreetMap tiles. If unavailable, the heat layer and non-map analysis still work, but roads may be blank.
-- Python 3.10 execution and visual browser review still need release sign-off on the intended machine. Final headless Chrome screenshots are recorded in `docs/screenshots/`; a legacy reference screenshot was unavailable because the native computer-use service failed.
+- Python 3.11 execution and visual browser review still need release sign-off on the intended machine. Final headless Chrome screenshots are recorded in `docs/screenshots/`; a legacy reference screenshot was unavailable because the native computer-use service failed.

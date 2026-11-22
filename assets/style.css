@@ -21,7 +21,7 @@ body { background: #0f2537; color: #e7edf4; }
 .summary-map-graph { height: 420px; }
 .summary-map-note { color: #c7d4df; font-size: .82rem; line-height: 1.4; }
 .heat-legend { display: flex; align-items: center; gap: .55rem; margin-bottom: .35rem; white-space: nowrap; }
-.heat-gradient { display: inline-block; width: 110px; height: 9px; border-radius: 9px; background: linear-gradient(90deg, #ffe3a1, #ffad42, #ef5c25, #a92619); }
+.heat-gradient { display: inline-block; width: 110px; height: 9px; border: 1px solid #6b8da9; border-radius: 9px; background: linear-gradient(90deg, #030512, #3e53a0, #72b8cd, #eafcfd); }
 .metric-card { border-top: 3px solid #df6919; }
 .metric-label { color: #b8c6d4; font-size: .85rem; text-transform: uppercase; letter-spacing: .055em; }
 .metric-value { color: #fff; font-size: 2.1rem; font-weight: 750; line-height: 1.2; margin: .45rem 0; }
