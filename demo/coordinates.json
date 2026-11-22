@@ -1,0 +1,122 @@
+{
+  "demo-01": {
+    "ADDRESS": "DEMO LOCATION 01",
+    "LATITUDE": 41.355,
+    "LONGITUDE": -73.515
+  },
+  "demo-02": {
+    "ADDRESS": "DEMO LOCATION 02",
+    "LATITUDE": 41.355,
+    "LONGITUDE": -73.49
+  },
+  "demo-03": {
+    "ADDRESS": "DEMO LOCATION 03",
+    "LATITUDE": 41.355,
+    "LONGITUDE": -73.465
+  },
+  "demo-04": {
+    "ADDRESS": "DEMO LOCATION 04",
+    "LATITUDE": 41.355,
+    "LONGITUDE": -73.44
+  },
+  "demo-05": {
+    "ADDRESS": "DEMO LOCATION 05",
+    "LATITUDE": 41.355,
+    "LONGITUDE": -73.415
+  },
+  "demo-06": {
+    "ADDRESS": "DEMO LOCATION 06",
+    "LATITUDE": 41.355,
+    "LONGITUDE": -73.39
+  },
+  "demo-07": {
+    "ADDRESS": "DEMO LOCATION 07",
+    "LATITUDE": 41.381,
+    "LONGITUDE": -73.515
+  },
+  "demo-08": {
+    "ADDRESS": "DEMO LOCATION 08",
+    "LATITUDE": 41.381,
+    "LONGITUDE": -73.49
+  },
+  "demo-09": {
+    "ADDRESS": "DEMO LOCATION 09",
+    "LATITUDE": 41.381,
+    "LONGITUDE": -73.465
+  },
+  "demo-10": {
+    "ADDRESS": "DEMO LOCATION 10",
+    "LATITUDE": 41.381,
+    "LONGITUDE": -73.44
+  },
+  "demo-11": {
+    "ADDRESS": "DEMO LOCATION 11",
+    "LATITUDE": 41.381,
+    "LONGITUDE": -73.415
+  },
+  "demo-12": {
+    "ADDRESS": "DEMO LOCATION 12",
+    "LATITUDE": 41.381,
+    "LONGITUDE": -73.39
+  },
+  "demo-13": {
+    "ADDRESS": "DEMO LOCATION 13",
+    "LATITUDE": 41.407,
+    "LONGITUDE": -73.515
+  },
+  "demo-14": {
+    "ADDRESS": "DEMO LOCATION 14",
+    "LATITUDE": 41.407,
+    "LONGITUDE": -73.49
+  },
+  "demo-15": {
+    "ADDRESS": "DEMO LOCATION 15",
+    "LATITUDE": 41.407,
+    "LONGITUDE": -73.465
+  },
+  "demo-16": {
+    "ADDRESS": "DEMO LOCATION 16",
+    "LATITUDE": 41.407,
+    "LONGITUDE": -73.44
+  },
+  "demo-17": {
+    "ADDRESS": "DEMO LOCATION 17",
+    "LATITUDE": 41.407,
+    "LONGITUDE": -73.415
+  },
+  "demo-18": {
+    "ADDRESS": "DEMO LOCATION 18",
+    "LATITUDE": 41.407,
+    "LONGITUDE": -73.39
+  },
+  "demo-19": {
+    "ADDRESS": "DEMO LOCATION 19",
+    "LATITUDE": 41.433,
+    "LONGITUDE": -73.515
+  },
+  "demo-20": {
+    "ADDRESS": "DEMO LOCATION 20",
+    "LATITUDE": 41.433,
+    "LONGITUDE": -73.49
+  },
+  "demo-21": {
+    "ADDRESS": "DEMO LOCATION 21",
+    "LATITUDE": 41.433,
+    "LONGITUDE": -73.465
+  },
+  "demo-22": {
+    "ADDRESS": "DEMO LOCATION 22",
+    "LATITUDE": 41.433,
+    "LONGITUDE": -73.44
+  },
+  "demo-23": {
+    "ADDRESS": "DEMO LOCATION 23",
+    "LATITUDE": 41.433,
+    "LONGITUDE": -73.415
+  },
+  "demo-24": {
+    "ADDRESS": "DEMO LOCATION 24",
+    "LATITUDE": 41.433,
+    "LONGITUDE": -73.39
+  }
+}

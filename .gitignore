@@ -1,4 +1,6 @@
 .venv/
+*.egg-info/
+.DS_Store
 __pycache__/
 .pytest_cache/
 .ruff_cache/
@@ -15,6 +17,7 @@ reference_screenshots/
 *.sqlite3*
 *.ipynb
 incident_reports/
+private_docs/
 latitude_longitude_addresses.json
 EXTRICATIONREADME.md
 

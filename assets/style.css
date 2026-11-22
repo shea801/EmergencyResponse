@@ -1,4 +1,5 @@
 body { background: #0f2537; color: #e7edf4; }
+.demo-banner { margin: 1rem 0; padding: .75rem 1rem; background: #244b67; border: 2px solid #eafcfd; color: #fff; font-weight: 700; letter-spacing: .025em; }
 .dashboard-container { max-width: 1800px; margin: auto; }
 .hero { padding: 1.2rem 0 .2rem; }
 .hero h1 { color: #df6919; font-weight: 750; letter-spacing: -.025em; }

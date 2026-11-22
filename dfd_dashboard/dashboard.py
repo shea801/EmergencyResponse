@@ -829,6 +829,10 @@ def export_package(snapshot: object, filters: Filters) -> bytes:
 def create_app(path: Path | None = None) -> Dash:
     with closing(connect(path)) as connection:
         snapshot = load_snapshot(connection)
+        marker = connection.execute(
+            "SELECT value FROM metadata WHERE key='dataset_kind'"
+        ).fetchone()
+    synthetic_demo = bool(marker and marker[0] == "synthetic_portfolio_demo")
     options = filter_options(snapshot)
     app = Dash(
         __name__,
@@ -838,6 +842,12 @@ def create_app(path: Path | None = None) -> Dash:
     )
     app.layout = dbc.Container(
         [
+            html.Div(
+                "SYNTHETIC DEMO DATA — invented incidents and locations; no real calls",
+                className="demo-banner",
+            )
+            if synthetic_demo
+            else None,
             html.Header(
                 [
                     html.Div("DANBURY FIRE DEPARTMENT", className="eyebrow"),

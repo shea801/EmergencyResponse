@@ -10,6 +10,7 @@ from pathlib import Path
 
 from dfd_dashboard.analytics import load_snapshot
 from dfd_dashboard.config import ROOT, database_path
+from dfd_dashboard.demo import DEMO_DB, build_demo_database, is_demo_database
 from dfd_dashboard.ingestion import import_path, refresh_coordinates
 from dfd_dashboard.storage import backup_database, connect, resolve_identity
 
@@ -20,37 +21,85 @@ def _project_path(path: Path) -> Path:
 
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(prog="dfd-dashboard")
-    result.add_argument("--database", type=Path, help="Override the project database")
+    result.add_argument(
+        "--database", type=Path, help="Override the project database"
+    )
     commands = result.add_subparsers(dest="command", required=True)
-    source = commands.add_parser("import", help="Import one CSV or a directory of exports")
-    source.add_argument("path", type=Path, nargs="?", default=ROOT / "incident_reports")
+    source = commands.add_parser(
+        "import", help="Import one CSV or a directory of exports"
+    )
+    source.add_argument(
+        "path", type=Path, nargs="?", default=ROOT / "incident_reports"
+    )
     commands.add_parser("audit", help="Print reconciled database counts")
-    commands.add_parser("issues", help="Print invalid-row and mapping issues as JSON lines")
-    commands.add_parser("refresh-coordinates", help="Reapply the local address cache")
+    commands.add_parser(
+        "issues", help="Print invalid-row and mapping issues as JSON lines"
+    )
+    commands.add_parser(
+        "refresh-coordinates", help="Reapply the local address cache"
+    )
     server = commands.add_parser("serve", help="Run the localhost dashboard")
     server.add_argument("--host", default="127.0.0.1")
     server.add_argument("--port", type=int, default=8050)
-    resolution = commands.add_parser("resolve", help="Choose an audited source version")
+    demo = commands.add_parser(
+        "demo", help="Serve only the invented portfolio dataset"
+    )
+    demo.add_argument("--host", default="127.0.0.1")
+    demo.add_argument("--port", type=int, default=8050)
+    resolution = commands.add_parser(
+        "resolve", help="Choose an audited source version"
+    )
     resolution.add_argument("identity")
     resolution.add_argument("source_row_id", type=int)
     resolution.add_argument("--reason", required=True)
-    backup = commands.add_parser("backup", help="Create a consistent SQLite backup")
+    backup = commands.add_parser(
+        "backup", help="Create a consistent SQLite backup"
+    )
     backup.add_argument("target", type=Path)
-    restore = commands.add_parser("restore-check", help="Check a separate restored database")
+    restore = commands.add_parser(
+        "restore-check", help="Check a separate restored database"
+    )
     restore.add_argument("path", type=Path)
     return result
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
+    if args.command == "demo":
+        if args.database:
+            raise ValueError(
+                "The demo command uses only data/portfolio-demo.sqlite3"
+            )
+        if not DEMO_DB.exists():
+            build_demo_database()
+        if not is_demo_database(DEMO_DB):
+            raise ValueError(
+                "Demo database is not marked synthetic; refusing to serve it"
+            )
+        from dfd_dashboard.dashboard import create_app
+
+        create_app(DEMO_DB).run(host=args.host, port=args.port, debug=False)
+        return 0
+    if args.command == "serve" and args.host not in {
+        "127.0.0.1",
+        "localhost",
+        "::1",
+    }:
+        raise ValueError(
+            "Operational data may only be served on localhost; use demo for a public bind"
+        )
     path = _project_path(args.database) if args.database else database_path()
     if args.command == "restore-check":
         restored_path = _project_path(args.path)
         if not restored_path.exists():
-            raise FileNotFoundError(f"Restore candidate not found: {restored_path}")
+            raise FileNotFoundError(
+                f"Restore candidate not found: {restored_path}"
+            )
         with sqlite3.connect(restored_path) as restored:
             result = restored.execute("PRAGMA integrity_check").fetchone()[0]
-            count = restored.execute("SELECT count(*) FROM incidents").fetchone()[0]
+            count = restored.execute(
+                "SELECT count(*) FROM incidents"
+            ).fetchone()[0]
         print(json.dumps({"integrity": result, "incidents": count}))
         return 0 if result == "ok" else 1
     with closing(connect(path)) as connection:
@@ -91,8 +140,12 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "refresh-coordinates":
             print(json.dumps(refresh_coordinates(connection)))
         elif args.command == "resolve":
-            resolve_identity(connection, args.identity, args.source_row_id, args.reason)
-            print(f"Resolved {args.identity} to source row {args.source_row_id}")
+            resolve_identity(
+                connection, args.identity, args.source_row_id, args.reason
+            )
+            print(
+                f"Resolved {args.identity} to source row {args.source_row_id}"
+            )
         elif args.command == "backup":
             backup_database(connection, _project_path(args.target))
             print(f"Backup saved: {_project_path(args.target)}")
