@@ -6,6 +6,7 @@ dfd_dashboard/cli.py
 dfd_dashboard/config.py
 dfd_dashboard/dashboard.py
 dfd_dashboard/ingestion.py
+dfd_dashboard/source_formats.py
 dfd_dashboard/storage.py
 dfd_dashboard/migrations/001_initial.sql
 dfd_dashboard/migrations/002_import_versions.sql
