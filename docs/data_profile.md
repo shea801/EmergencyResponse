@@ -1,6 +1,6 @@
 # Supplied export profile — 25 October 2026
 
-The reviewed input directory contains 22 `Incident Report*.csv` files with 500 rows each. All have the same eleven headers. There are 11,000 source rows, 9,500 distinct complete rows, and 9,499 distinct incident-number values. Exactly 1,500 rows repeat. `DFC-26-000740` appears on two differing records (in `Incident Report 4.csv`, CSV rows 305 and 368); no source precedence is established. The resulting local database has 9,498 canonical incidents and 17,321 distinct incident–apparatus participations before any resolution.
+The reviewed input directory contains 22 `Incident Report*.csv` files with 500 rows each. All have the same eleven headers. There are 11,000 source rows, 9,500 distinct complete rows, and 9,499 distinct incident-number values. Exactly 1,500 rows repeat. One incident identifier appears on two differing records; no source precedence is established. The resulting local database has 9,498 canonical incidents and 17,321 distinct incident–apparatus participations before any resolution.
 
 Observed source incident dates range from 24 April 2025 through 28 April 2026; this does not demonstrate complete reporting between those dates. Source row placeholder/missing counts: dispatch type 16, first-arriving apparatus 448, incident type 5, property type 120, station 236. Source shifts are A 2,745; B 2,719; C 2,716; D 2,820. Report statuses are Authorized 10,988; Not Started 5; Incomplete 4; Pending Authorization 3. These are source-row counts and include repeated exports.
 

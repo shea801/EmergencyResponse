@@ -16,11 +16,11 @@ The Data quality view lists every conflict candidate with `source_row_id`, filen
 
 ```sh
 dfd-dashboard backup data/before-resolution.sqlite3
-dfd-dashboard resolve DFC-26-000740 7804 --reason 'Reviewed against authoritative First Due record on YYYY-MM-DD'
+dfd-dashboard resolve DEMO-0001 42 --reason 'Reviewed against authoritative record on YYYY-MM-DD'
 dfd-dashboard audit
 ```
 
-The ID `7804` is an example from the initial local import and may differ after rebuilding a database. Verify it in the current dashboard before running the command. Every resolution is stored with UTC decision time and reason; a subsequent correction needs a new explicit resolution. Do not use file modification time to choose versions. Confirm the required identity scope with DFD before treating this as an official incident register.
+The incident identifier and source row ID in this example are invented. Replace both with values verified in the current dashboard before running the command. Every resolution is stored with UTC decision time and reason; a subsequent correction needs a new explicit resolution. Do not use file modification time to choose versions. Confirm the required identity scope with DFD before treating this as an official incident register.
 
 ## Coordinates
 
