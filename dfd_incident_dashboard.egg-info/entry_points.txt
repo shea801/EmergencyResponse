@@ -1,0 +1,2 @@
+[console_scripts]
+dfd-dashboard = dfd_dashboard.cli:main

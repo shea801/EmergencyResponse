@@ -1,0 +1,24 @@
+{
+  "version": "2026-10-25-1",
+  "timezone": "America/New_York",
+  "repeat_location_threshold": 5,
+  "small_sample_threshold": 10,
+  "seasons": {
+    "Winter": [12, 1, 2], "Spring": [3, 4, 5],
+    "Summer": [6, 7, 8], "Fall": [9, 10, 11]
+  },
+  "unit_aliases": {
+    "C30": "Car 30", "CAR 30": "Car 30",
+    "T1": "Truck 1", "TRUCK 1": "Truck 1",
+    "TAC1": "Tac 1", "TAC 1": "Tac 1",
+    "SQ21": "Squad 21", "SQUAD 21": "Squad 21",
+    "E22": "Engine 22", "ENGINE 22": "Engine 22",
+    "E23": "Engine 23", "ENGINE 23": "Engine 23",
+    "E24": "Engine 24", "ENGINE 24": "Engine 24",
+    "E25": "Engine 25", "ENGINE 25": "Engine 25",
+    "E26": "Engine 26", "ENGINE 26": "Engine 26"
+  },
+  "company_mappings": {},
+  "category_mappings": {},
+  "coordinate_cache": "latitude_longitude_addresses.json"
+}

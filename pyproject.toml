@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=75,<83"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dfd-incident-dashboard"
+version = "1.0.0"
+description = "Local incident analysis dashboard for Danbury Fire Department exports"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "dash>=4.2,<5",
+  "dash-bootstrap-components>=2.0,<3",
+  "plotly>=6.7,<7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9,<10", "ruff>=0.15,<0.16"]
+
+[project.scripts]
+dfd-dashboard = "dfd_dashboard.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["dfd_dashboard*"]
+
+[tool.setuptools.package-data]
+dfd_dashboard = ["migrations/*.sql"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+indent-width = 4
+include = ["dfd_dashboard/**/*.py", "tests/**/*.py"]
+exclude = [".venv", "__pycache__", ".pytest_cache", ".ruff_cache", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

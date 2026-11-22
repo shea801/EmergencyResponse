@@ -1,0 +1,20 @@
+# Supplied export profile — 25 October 2026
+
+The reviewed input directory contains 22 `Incident Report*.csv` files with 500 rows each. All have the same eleven headers. There are 11,000 source rows, 9,500 distinct complete rows, and 9,499 distinct incident-number values. Exactly 1,500 rows repeat. `DFC-26-000740` appears on two differing records (in `Incident Report 4.csv`, CSV rows 305 and 368); no source precedence is established. The resulting local database has 9,498 canonical incidents and 17,321 distinct incident–apparatus participations before any resolution.
+
+Observed source incident dates range from 24 April 2025 through 28 April 2026; this does not demonstrate complete reporting between those dates. Source row placeholder/missing counts: dispatch type 16, first-arriving apparatus 448, incident type 5, property type 120, station 236. Source shifts are A 2,745; B 2,719; C 2,716; D 2,820. Report statuses are Authorized 10,988; Not Started 5; Incomplete 4; Pending Authorization 3. These are source-row counts and include repeated exports.
+
+The existing JSON coordinate cache has 11,000 entries, 5,245 distinct normalized addresses, and exact normalized address keys for all 5,245 source address keys. Multiple cache coordinates occur for 96 addresses. Under the current consistency rule, canonical location records are 4,042 `in_area`, 4 `out_of_area`, 53 `cache_conflict`, and 1,146 `missing` (no usable cache point after validation or no canonical address match). At the canonical incident grain, 7,255 of 9,498 incidents (76.4%) have retained coordinates. Cache provenance is unverified and location data requires departmental review before operational use.
+
+The baseline is recomputed by `dfd-dashboard audit` after new inputs. Generated database and import reports under `data/` are excluded from source control.
+
+## October 26, 2026 upload
+
+The directory now contains 33 files: 22 detailed exports with 11,000 rows and 11 summary exports with 43,675 rows, for 54,675 input rows. The summary filenames include `incident_reports 27..csv`. Summary headers use `INCIDENT ` and ISO-style local timestamps and omit final incident type, property type, apparatus participation, and station. Officer/editor columns are retained only in raw lineage.
+
+The detailed exports contain 9,499 incident-number values and the summaries contain 5,323, with 674 identifiers overlapping across layouts. The union is 14,148 identifiers. Reconciliation preserves compatible detailed values and excludes 17 identities with conflicting supplied observations, leaving 14,131 canonical incidents and 17,283 reported apparatus participations. Twelve overlapping identities have no matching shared-field version between layouts; four additional summary-only identities have conflicting observations within the new files, alongside the previously known detailed-export conflict. Shared-field conflicts include status changes and differing incident details; no source precedence has been authorized.
+
+Of the canonical incidents, 4,645 have only summary data and no reported apparatus participation, final incident type, or property type. Their first-arriving unit, dispatch classification, source time, shift, and location remain usable when present. Unit-response totals are incomplete for this population; no unit list is inferred from first arrival. Observed canonical dates now span April 24, 2025 through October 26, 2026, without establishing complete coverage.
+
+The active database retains 55,175 source-lineage rows. This exceeds the current files' row total by 500 because it also retains the original `Incident Report.csv` provenance after that file was renamed to `Incident Report 0.csv`. Those records reconcile as duplicates and do not increase incident or unit totals. Reimporting all 33 unchanged files was verified on a database copy to leave canonical counts and data version unchanged. The active database was backed up before import; the backup and machine-readable import/verification reports are under the ignored `data/` directory.
+
