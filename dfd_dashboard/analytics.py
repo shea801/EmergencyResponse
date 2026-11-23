@@ -37,15 +37,23 @@ class Filters:
 
     def __post_init__(self) -> None:
         if (self.hour_start is None) != (self.hour_end is None):
-            raise ValueError("Choose both hour boundaries or disable the hour filter")
+            raise ValueError(
+                "Choose both hour boundaries or disable the hour filter"
+            )
         if self.hour_start is not None:
             if not (0 <= self.hour_start <= 23 and 0 <= self.hour_end <= 23):
                 raise ValueError("Hour boundaries must be between 0 and 23")
             if self.hour_start == self.hour_end:
-                raise ValueError("Identical enabled hour boundaries are not valid")
+                raise ValueError(
+                    "Identical enabled hour boundaries are not valid"
+                )
         if self.mode not in {"participation", "first_arrival"}:
             raise ValueError("Unknown apparatus filter mode")
-        if self.start_date and self.end_date and self.start_date > self.end_date:
+        if (
+            self.start_date
+            and self.end_date
+            and self.start_date > self.end_date
+        ):
             raise ValueError("Start date must be on or before end date")
 
 
@@ -133,7 +141,10 @@ def _time_matches(incident: dict, filters: Filters) -> bool:
         return False
     if (
         filters.end_date
-        and day >= (date.fromisoformat(filters.end_date) + timedelta(days=1)).isoformat()
+        and day
+        >= (
+            date.fromisoformat(filters.end_date) + timedelta(days=1)
+        ).isoformat()
     ):
         return False
     if filters.weekdays and moment.weekday() not in filters.weekdays:
@@ -142,7 +153,9 @@ def _time_matches(incident: dict, filters: Filters) -> bool:
         return False
     if filters.seasons:
         season_map = settings()["seasons"]
-        if not any(moment.month in season_map[name] for name in filters.seasons):
+        if not any(
+            moment.month in season_map[name] for name in filters.seasons
+        ):
             return False
     if filters.hour_start is not None:
         start, end = filters.hour_start, filters.hour_end
@@ -154,7 +167,9 @@ def _time_matches(incident: dict, filters: Filters) -> bool:
     return True
 
 
-def apply_filters(snapshot: Snapshot, filters: Filters) -> tuple[list[dict], list[dict]]:
+def apply_filters(
+    snapshot: Snapshot, filters: Filters
+) -> tuple[list[dict], list[dict]]:
     responses_by_incident: dict[str, list[dict]] = defaultdict(list)
     for response in snapshot.responses:
         responses_by_incident[response["identity_key"]].append(response)
@@ -165,30 +180,46 @@ def apply_filters(snapshot: Snapshot, filters: Filters) -> tuple[list[dict], lis
             continue
         if any(
             (
-                filters.shifts and (incident["shift"] or "__unknown__") not in filters.shifts,
+                filters.shifts
+                and (incident["shift"] or "__unknown__") not in filters.shifts,
                 filters.dispatch_types
-                and (incident["dispatch_type"] or "__unknown__") not in filters.dispatch_types,
+                and (incident["dispatch_type"] or "__unknown__")
+                not in filters.dispatch_types,
                 filters.incident_types
-                and (incident["incident_type"] or "__unknown__") not in filters.incident_types,
+                and (incident["incident_type"] or "__unknown__")
+                not in filters.incident_types,
                 filters.property_types
-                and (incident["property_type"] or "__unknown__") not in filters.property_types,
-                filters.statuses and (incident["status"] or "__unknown__") not in filters.statuses,
+                and (incident["property_type"] or "__unknown__")
+                not in filters.property_types,
+                filters.statuses
+                and (incident["status"] or "__unknown__")
+                not in filters.statuses,
                 filters.locations
-                and (incident["location_key"] or "__unknown__") not in filters.locations,
-                filters.location_detail and incident["location_key"] != filters.location_detail,
+                and (incident["location_key"] or "__unknown__")
+                not in filters.locations,
+                filters.location_detail
+                and incident["location_key"] != filters.location_detail,
             )
         ):
             continue
         if filters.search:
             haystack = " ".join(
                 str(incident[key] or "")
-                for key in ("identity_key", "location_raw", "dispatch_type", "incident_type")
+                for key in (
+                    "identity_key",
+                    "location_raw",
+                    "dispatch_type",
+                    "incident_type",
+                )
             ).casefold()
             if filters.search.casefold().strip() not in haystack:
                 continue
         all_responses = responses_by_incident[incident["identity_key"]]
         if filters.mode == "first_arrival":
-            if filters.apparatus and incident["first_unit"] not in filters.apparatus:
+            if (
+                filters.apparatus
+                and incident["first_unit"] not in filters.apparatus
+            ):
                 continue
             if filters.companies:
                 first_company = next(
@@ -206,8 +237,14 @@ def apply_filters(snapshot: Snapshot, filters: Filters) -> tuple[list[dict], lis
             matched = [
                 r
                 for r in all_responses
-                if (not filters.apparatus or r["apparatus_label"] in filters.apparatus)
-                and (not filters.companies or (r["company"] or "Unmapped") in filters.companies)
+                if (
+                    not filters.apparatus
+                    or r["apparatus_label"] in filters.apparatus
+                )
+                and (
+                    not filters.companies
+                    or (r["company"] or "Unmapped") in filters.companies
+                )
             ]
             if (filters.apparatus or filters.companies) and not matched:
                 continue
@@ -225,14 +262,21 @@ def count_by(items: list[dict], key: str) -> list[dict]:
             "label": label,
             "count": count,
             "share": round(100 * count / total, 1) if total else 0,
-            "sample_note": f"Small sample (<{threshold})" if count < threshold else "",
+            "sample_note": f"Small sample (<{threshold})"
+            if count < threshold
+            else "",
         }
-        for label, count in sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))
+        for label, count in sorted(
+            counts.items(), key=lambda pair: (-pair[1], pair[0])
+        )
     ]
 
 
 def temporal_counts(incidents: list[dict]) -> dict[str, list[dict]]:
-    counters = {name: Counter() for name in ("hour", "weekday", "month", "season", "year")}
+    counters = {
+        name: Counter()
+        for name in ("hour", "weekday", "month", "season", "year")
+    }
     season_map = settings()["seasons"]
     threshold = settings()["small_sample_threshold"]
     dated = 0
@@ -245,8 +289,14 @@ def temporal_counts(incidents: list[dict]) -> dict[str, list[dict]]:
         counters["weekday"][moment.strftime("%A")] += 1
         counters["month"][moment.strftime("%Y-%m")] += 1
         counters["year"][str(moment.year)] += 1
-        season = next(name for name, months in season_map.items() if moment.month in months)
-        season_year = moment.year + int(season == "Winter" and moment.month == 12)
+        season = next(
+            name
+            for name, months in season_map.items()
+            if moment.month in months
+        )
+        season_year = moment.year + int(
+            season == "Winter" and moment.month == 12
+        )
         counters["season"][f"{season} {season_year}"] += 1
     return {
         name: [
@@ -254,7 +304,9 @@ def temporal_counts(incidents: list[dict]) -> dict[str, list[dict]]:
                 "label": label,
                 "count": count,
                 "share": round(100 * count / dated, 1) if dated else 0,
-                "sample_note": f"Small sample (<{threshold})" if count < threshold else "",
+                "sample_note": f"Small sample (<{threshold})"
+                if count < threshold
+                else "",
             }
             for label, count in sorted(counter.items())
         ]
@@ -278,36 +330,60 @@ def location_counts(incidents: list[dict]) -> list[dict]:
             },
         )
         item["count"] += 1
-        item["sample_note"] = f"Small sample (<{threshold})" if item["count"] < threshold else ""
-    return sorted(grouped.values(), key=lambda item: (-item["count"], item["label"]))
+        item["sample_note"] = (
+            f"Small sample (<{threshold})" if item["count"] < threshold else ""
+        )
+    return sorted(
+        grouped.values(), key=lambda item: (-item["count"], item["label"])
+    )
 
 
 def summarize(incidents: list[dict], responses: list[dict]) -> dict:
     located = sum(row["latitude"] is not None for row in incidents)
-    first = count_by([{"first_unit": row["first_unit"]} for row in incidents], "first_unit")
-    companies = count_by(
-        [{"company": row["company"] or "Unmapped"} for row in responses], "company"
+    first = count_by(
+        [{"first_unit": row["first_unit"]} for row in incidents], "first_unit"
     )
-    company_pairs = {(row["identity_key"], row["company"] or "Unmapped") for row in responses}
+    companies = count_by(
+        [{"company": row["company"] or "Unmapped"} for row in responses],
+        "company",
+    )
+    company_pairs = {
+        (row["identity_key"], row["company"] or "Unmapped")
+        for row in responses
+    }
     company_incident_rows = count_by(
         [{"company": company} for _, company in company_pairs], "company"
     )
     for row in company_incident_rows:
-        row["share"] = round(100 * row["count"] / len(incidents), 1) if incidents else 0
+        row["share"] = (
+            round(100 * row["count"] / len(incidents), 1) if incidents else 0
+        )
     return {
         "incidents": len(incidents),
         "unit_responses": len(responses),
         "located": located,
-        "mapping_percent": round(100 * located / len(incidents), 1) if incidents else 0,
-        "missing_timestamps": sum(row["local_timestamp"] is None for row in incidents),
-        "missing_participation": sum(row["apparatus_raw"] is None for row in incidents),
-        "missing_incident_types": sum(row["incident_type"] is None for row in incidents),
-        "missing_property_types": sum(row["property_type"] is None for row in incidents),
+        "mapping_percent": round(100 * located / len(incidents), 1)
+        if incidents
+        else 0,
+        "missing_timestamps": sum(
+            row["local_timestamp"] is None for row in incidents
+        ),
+        "missing_participation": sum(
+            row["apparatus_raw"] is None for row in incidents
+        ),
+        "missing_incident_types": sum(
+            row["incident_type"] is None for row in incidents
+        ),
+        "missing_property_types": sum(
+            row["property_type"] is None for row in incidents
+        ),
         "incident_types": count_by(incidents, "incident_type"),
         "dispatch_types": count_by(incidents, "dispatch_type"),
         "property_types": count_by(incidents, "property_type"),
         "shifts": count_by(incidents, "shift"),
-        "units": count_by([{"unit": r["apparatus_label"]} for r in responses], "unit"),
+        "units": count_by(
+            [{"unit": r["apparatus_label"]} for r in responses], "unit"
+        ),
         "companies": companies,
         "company_incidents": company_incident_rows,
         "first_arrivals": first,
@@ -373,7 +449,9 @@ def quality_details(connection: sqlite3.Connection) -> dict:
     ]
     batches = [
         {**dict(row), "report": json.loads(row["report_json"])}
-        for row in connection.execute("SELECT * FROM import_batches ORDER BY id DESC LIMIT 25")
+        for row in connection.execute(
+            "SELECT * FROM import_batches ORDER BY id DESC LIMIT 25"
+        )
     ]
     coordinates = [
         dict(row)

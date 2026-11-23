@@ -15,7 +15,17 @@ from pathlib import Path
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
-from dash import Dash, Input, Output, State, ctx, dash_table, dcc, html, no_update
+from dash import (
+    Dash,
+    Input,
+    Output,
+    State,
+    ctx,
+    dash_table,
+    dcc,
+    html,
+    no_update,
+)
 
 from dfd_dashboard.analytics import (
     Filters,
@@ -56,11 +66,14 @@ FILTER_IDS = (
 
 def _options(values: list[str] | tuple[str, ...]) -> list[dict]:
     return [
-        {"label": "Unknown" if item == "__unknown__" else item, "value": item} for item in values
+        {"label": "Unknown" if item == "__unknown__" else item, "value": item}
+        for item in values
     ]
 
 
-def _dropdown(label: str, control_id: str, values: list[str], multi: bool = True) -> dbc.Col:
+def _dropdown(
+    label: str, control_id: str, values: list[str], multi: bool = True
+) -> dbc.Col:
     return dbc.Col(
         [
             html.Label(label, htmlFor=control_id, className="filter-label"),
@@ -86,7 +99,10 @@ def _hour_dropdown(label: str, control_id: str) -> dbc.Col:
             dcc.Dropdown(
                 id=control_id,
                 options=[{"label": "Off", "value": ""}]
-                + [{"label": f"{hour:02d}:00", "value": hour} for hour in range(24)],
+                + [
+                    {"label": f"{hour:02d}:00", "value": hour}
+                    for hour in range(24)
+                ],
                 placeholder="Off",
                 className="filter-dropdown",
             ),
@@ -115,7 +131,9 @@ def _card(label: str, value: str, detail: str = "") -> dbc.Col:
     )
 
 
-def _table(rows: list[dict], columns: list[tuple[str, str]], table_id: str) -> dash_table.DataTable:
+def _table(
+    rows: list[dict], columns: list[tuple[str, str]], table_id: str
+) -> dash_table.DataTable:
     return dash_table.DataTable(
         id=table_id,
         columns=[{"name": title, "id": key} for title, key in columns],
@@ -134,15 +152,26 @@ def _table(rows: list[dict], columns: list[tuple[str, str]], table_id: str) -> d
             "maxWidth": "360px",
             "whiteSpace": "normal",
         },
-        style_header={"backgroundColor": "#182f45", "fontWeight": "bold", "color": ORANGE},
-        style_data_conditional=[{"if": {"row_index": "odd"}, "backgroundColor": "#173047"}],
+        style_header={
+            "backgroundColor": "#182f45",
+            "fontWeight": "bold",
+            "color": ORANGE,
+        },
+        style_data_conditional=[
+            {"if": {"row_index": "odd"}, "backgroundColor": "#173047"}
+        ],
     )
 
 
-def _figure(title: str, rows: list[dict], limit: int | None = None) -> go.Figure:
+def _figure(
+    title: str, rows: list[dict], limit: int | None = None
+) -> go.Figure:
     shown = rows[:limit] if limit else rows
     if limit and len(rows) > limit:
-        shown = [*shown, {"label": "Other", "count": sum(r["count"] for r in rows[limit:])}]
+        shown = [
+            *shown,
+            {"label": "Other", "count": sum(r["count"] for r in rows[limit:])},
+        ]
     fig = go.Figure()
     if shown:
         fig.add_bar(
@@ -176,7 +205,10 @@ def _figure(title: str, rows: list[dict], limit: int | None = None) -> go.Figure
 
 def _panel(title: str, content: object) -> dbc.Card:
     return dbc.Card(
-        [dbc.CardHeader(html.H4(title, className="m-0")), dbc.CardBody(content)],
+        [
+            dbc.CardHeader(html.H4(title, className="m-0")),
+            dbc.CardBody(content),
+        ],
         className="analysis-card mb-4",
     )
 
@@ -230,11 +262,16 @@ DETAIL_COLUMNS = [
 ]
 
 
-def _bar_and_table(title: str, rows: list[dict], key: str, limit: int = 12) -> dbc.Card:
+def _bar_and_table(
+    title: str, rows: list[dict], key: str, limit: int = 12
+) -> dbc.Card:
     return _panel(
         title,
         [
-            dcc.Graph(figure=_figure(title, rows, limit=limit), config={"displaylogo": False}),
+            dcc.Graph(
+                figure=_figure(title, rows, limit=limit),
+                config={"displaylogo": False},
+            ),
             _count_table(rows, f"table-{key}"),
         ],
     )
@@ -242,7 +279,9 @@ def _bar_and_table(title: str, rows: list[dict], key: str, limit: int = 12) -> d
 
 def _location_map(locations: list[dict]) -> go.Figure:
     located = [
-        item for item in locations if item["latitude"] is not None and item["longitude"] is not None
+        item
+        for item in locations
+        if item["latitude"] is not None and item["longitude"] is not None
     ]
     fig = go.Figure()
     if located:
@@ -251,7 +290,9 @@ def _location_map(locations: list[dict]) -> go.Figure:
                 lat=[item["latitude"] for item in located],
                 lon=[item["longitude"] for item in located],
                 z=[item["count"] for item in located],
-                customdata=[[item["label"], item["count"]] for item in located],
+                customdata=[
+                    [item["label"], item["count"]] for item in located
+                ],
                 zmin=0,
                 zmax=10,
                 radius=10,
@@ -271,7 +312,11 @@ def _location_map(locations: list[dict]) -> go.Figure:
             showarrow=False,
         )
     fig.update_layout(
-        map={"style": "open-street-map", "center": {"lat": 41.4, "lon": -73.45}, "zoom": 11},
+        map={
+            "style": "open-street-map",
+            "center": {"lat": 41.4, "lon": -73.45},
+            "zoom": 11,
+        },
         paper_bgcolor=BLUE,
         font_color=TEXT,
         height=420,
@@ -295,7 +340,9 @@ def _view_content(
                 [
                     dbc.Col(
                         _bar_and_table(
-                            "Leading incident types", result["incident_types"], "overview-types"
+                            "Leading incident types",
+                            result["incident_types"],
+                            "overview-types",
                         ),
                         lg=6,
                     ),
@@ -313,7 +360,12 @@ def _view_content(
             dbc.Row(
                 [
                     dbc.Col(
-                        _bar_and_table("Reported shifts", result["shifts"], "overview-shifts"), lg=6
+                        _bar_and_table(
+                            "Reported shifts",
+                            result["shifts"],
+                            "overview-shifts",
+                        ),
+                        lg=6,
                     ),
                     dbc.Col(
                         _panel(
@@ -342,7 +394,8 @@ def _view_content(
         ]
     if view == "types":
         pairs = Counter(
-            (r["dispatch_type"] or "Unknown", r["incident_type"] or "Unknown") for r in incidents
+            (r["dispatch_type"] or "Unknown", r["incident_type"] or "Unknown")
+            for r in incidents
         )
         comparison = [
             {"dispatch": a, "incident_type": b, "count": n}
@@ -351,7 +404,10 @@ def _view_content(
         mapping = settings()["category_mappings"]
         broad = (
             count_by(
-                [{"category": mapping.get(r["incident_type"], "Unmapped")} for r in incidents],
+                [
+                    {"category": mapping.get(r["incident_type"], "Unmapped")}
+                    for r in incidents
+                ],
                 "category",
             )
             if mapping
@@ -362,17 +418,25 @@ def _view_content(
                 [
                     dbc.Col(
                         _bar_and_table(
-                            "Reported incident type", result["incident_types"], "types-final"
+                            "Reported incident type",
+                            result["incident_types"],
+                            "types-final",
                         ),
                         lg=6,
                     ),
                     dbc.Col(
-                        _bar_and_table("Dispatch type", result["dispatch_types"], "types-dispatch"),
+                        _bar_and_table(
+                            "Dispatch type",
+                            result["dispatch_types"],
+                            "types-dispatch",
+                        ),
                         lg=6,
                     ),
                 ]
             ),
-            _bar_and_table("Property type", result["property_types"], "types-property"),
+            _bar_and_table(
+                "Property type", result["property_types"], "types-property"
+            ),
             _panel(
                 "Dispatch versus incident classification",
                 _table(
@@ -402,11 +466,21 @@ def _view_content(
             dbc.Row(
                 [
                     dbc.Col(
-                        _bar_and_table("Hour of day", result["temporal"]["hour"], "time-hour", 24),
+                        _bar_and_table(
+                            "Hour of day",
+                            result["temporal"]["hour"],
+                            "time-hour",
+                            24,
+                        ),
                         lg=6,
                     ),
                     dbc.Col(
-                        _bar_and_table("Weekday", result["temporal"]["weekday"], "time-weekday", 7),
+                        _bar_and_table(
+                            "Weekday",
+                            result["temporal"]["weekday"],
+                            "time-weekday",
+                            7,
+                        ),
                         lg=6,
                     ),
                 ]
@@ -414,17 +488,28 @@ def _view_content(
             dbc.Row(
                 [
                     dbc.Col(
-                        _bar_and_table("Month", result["temporal"]["month"], "time-month", 24), lg=6
+                        _bar_and_table(
+                            "Month",
+                            result["temporal"]["month"],
+                            "time-month",
+                            24,
+                        ),
+                        lg=6,
                     ),
                     dbc.Col(
                         _bar_and_table(
-                            "Season and year", result["temporal"]["season"], "time-season", 24
+                            "Season and year",
+                            result["temporal"]["season"],
+                            "time-season",
+                            24,
                         ),
                         lg=6,
                     ),
                 ]
             ),
-            _bar_and_table("Calendar year", result["temporal"]["year"], "time-year", 12),
+            _bar_and_table(
+                "Calendar year", result["temporal"]["year"], "time-year", 12
+            ),
         ]
     if view == "units":
         return [
@@ -435,13 +520,17 @@ def _view_content(
                 [
                     dbc.Col(
                         _bar_and_table(
-                            "Reported shift · incident counts", result["shifts"], "units-shifts"
+                            "Reported shift · incident counts",
+                            result["shifts"],
+                            "units-shifts",
                         ),
                         lg=6,
                     ),
                     dbc.Col(
                         _bar_and_table(
-                            "Apparatus · unit responses", result["units"], "units-response"
+                            "Apparatus · unit responses",
+                            result["units"],
+                            "units-response",
                         ),
                         lg=6,
                     ),
@@ -478,8 +567,14 @@ def _view_content(
         ]
     if view == "locations":
         threshold = settings()["repeat_location_threshold"]
-        candidates = [row for row in result["locations"] if row["count"] >= threshold]
-        chosen = [row for row in incidents if row["location_key"] == selected_location]
+        candidates = [
+            row for row in result["locations"] if row["count"] >= threshold
+        ]
+        chosen = [
+            row
+            for row in incidents
+            if row["location_key"] == selected_location
+        ]
         return [
             html.P(
                 f"{result['located']:,} of {result['incidents']:,} selected incidents mapped "
@@ -492,7 +587,11 @@ def _view_content(
                 f"Repeat-location candidates · at least {threshold} incidents in active period",
                 _table(
                     candidates,
-                    [("Address", "label"), ("Incidents", "count"), ("Sample", "sample_note")],
+                    [
+                        ("Address", "label"),
+                        ("Incidents", "count"),
+                        ("Sample", "sample_note"),
+                    ],
                     "table-repeat-locations",
                 ),
             ),
@@ -503,9 +602,15 @@ def _view_content(
             ),
             _panel(
                 "Selected location incident detail",
-                _table(_detail_rows(chosen), DETAIL_COLUMNS, "table-location-detail")
+                _table(
+                    _detail_rows(chosen),
+                    DETAIL_COLUMNS,
+                    "table-location-detail",
+                )
                 if chosen
-                else html.P("Choose a location in More filters to inspect its incidents."),
+                else html.P(
+                    "Choose a location in More filters to inspect its incidents."
+                ),
             ),
             html.P(
                 "Repeat locations are candidates for investigation, not official target-hazard designations."
@@ -518,14 +623,18 @@ def _view_content(
                 html.P(
                     "Search with the global text filter; sort and filter columns below. Source references identify the selected canonical row."
                 ),
-                _table(_detail_rows(incidents), DETAIL_COLUMNS, "table-incidents"),
+                _table(
+                    _detail_rows(incidents), DETAIL_COLUMNS, "table-incidents"
+                ),
             ],
         )
     unmapped = count_by(
-        [{"unit": r["apparatus_label"]} for r in responses if not r["mapped"]], "unit"
+        [{"unit": r["apparatus_label"]} for r in responses if not r["mapped"]],
+        "unit",
     )
     problems = [
-        {**row, "issues": ", ".join(json.loads(row["issues_json"]))} for row in quality["problems"]
+        {**row, "issues": ", ".join(json.loads(row["issues_json"]))}
+        for row in quality["problems"]
     ]
     return [
         dbc.Alert(
@@ -584,7 +693,10 @@ def _view_content(
                 "table-issues",
             ),
         ),
-        _panel("Unmapped participating apparatus", _count_table(unmapped, "table-unmapped")),
+        _panel(
+            "Unmapped participating apparatus",
+            _count_table(unmapped, "table-unmapped"),
+        ),
         _panel(
             "Coordinate issues · leading 100 addresses",
             _table(
@@ -610,7 +722,9 @@ def _view_content(
                         "new": row["report"]["new_candidates"],
                         "duplicates": row["report"]["duplicates"],
                         "enrichments": row["report"].get("enrichments", 0),
-                        "format": row["report"].get("source_format", "detailed"),
+                        "format": row["report"].get(
+                            "source_format", "detailed"
+                        ),
                         "conflict": row["report"]["conflict_versions"],
                         "invalid": row["report"]["invalid_rows"],
                         "importer_version": row["importer_version"],
@@ -664,11 +778,22 @@ def _filter_from_values(values: tuple) -> Filters:
     end_hour = None if end_hour == "" else end_hour
     start_date, end_date = dates
     weekdays = tuple(
-        ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].index(day)
+        [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ].index(day)
         for day in (weekdays or [])
     )
     months = tuple(
-        [datetime(2000, month, 1).strftime("%B") for month in range(1, 13)].index(name) + 1
+        [
+            datetime(2000, month, 1).strftime("%B") for month in range(1, 13)
+        ].index(name)
+        + 1
         for name in (months or [])
     )
     return Filters(
@@ -700,7 +825,11 @@ def _filter_state(values: tuple) -> dict:
 
 def _safe_cell(value: object) -> str:
     text = "" if value is None else str(value)
-    return "'" + text if text.lstrip().startswith(("=", "+", "-", "@", "\t", "\r")) else text
+    return (
+        "'" + text
+        if text.lstrip().startswith(("=", "+", "-", "@", "\t", "\r"))
+        else text
+    )
 
 
 def _csv_bytes(rows: list[dict], columns: list[str]) -> bytes:
@@ -754,8 +883,16 @@ def export_package(snapshot: object, filters: Filters) -> bytes:
         ("Reported shift", "shifts", "selected incidents"),
         ("Apparatus unit responses", "units", "selected unit responses"),
         ("Company unit responses", "companies", "selected unit responses"),
-        ("Company participating incidents", "company_incidents", "selected incidents"),
-        ("Source-reported first arrivals", "first_arrivals", "selected incidents"),
+        (
+            "Company participating incidents",
+            "company_incidents",
+            "selected incidents",
+        ),
+        (
+            "Source-reported first arrivals",
+            "first_arrivals",
+            "selected incidents",
+        ),
     ):
         summary_rows.extend(
             {
@@ -780,18 +917,30 @@ def export_package(snapshot: object, filters: Filters) -> bytes:
         for row in result["locations"]
     )
     output = io.BytesIO()
-    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+    with zipfile.ZipFile(
+        output, "w", compression=zipfile.ZIP_DEFLATED
+    ) as archive:
         archive.writestr(
-            "incidents.csv", _csv_bytes(incident_rows, [key for _, key in DETAIL_COLUMNS])
+            "incidents.csv",
+            _csv_bytes(incident_rows, [key for _, key in DETAIL_COLUMNS]),
         )
         archive.writestr(
             "unit_responses.csv",
-            _csv_bytes(response_rows, ["incident", "apparatus", "configured_company"]),
+            _csv_bytes(
+                response_rows, ["incident", "apparatus", "configured_company"]
+            ),
         )
         archive.writestr(
             "summary.csv",
             _csv_bytes(
-                summary_rows, ["metric", "category", "count", "share_percent", "denominator"]
+                summary_rows,
+                [
+                    "metric",
+                    "category",
+                    "count",
+                    "share_percent",
+                    "denominator",
+                ],
             ),
         )
         archive.writestr(
@@ -802,21 +951,33 @@ def export_package(snapshot: object, filters: Filters) -> bytes:
                     "data_version": snapshot.version,
                     "metric_version": METRIC_VERSION,
                     "config_version": settings()["version"],
-                    "filters": {key: value for key, value in vars(filters).items()},
+                    "filters": {
+                        key: value for key, value in vars(filters).items()
+                    },
                     "definitions": {
                         "incidents": "distinct reconciled source identifiers",
                         "unit_responses": "distinct incident-apparatus participations; selected units only in participation mode",
                         "mapped": "incidents with coordinates from an exact normalized address cache match",
                     },
                     "exclusions": {
-                        "unresolved_identities": snapshot.quality["unresolved_identities"],
-                        "invalid_source_rows": snapshot.quality["invalid_rows"],
+                        "unresolved_identities": snapshot.quality[
+                            "unresolved_identities"
+                        ],
+                        "invalid_source_rows": snapshot.quality[
+                            "invalid_rows"
+                        ],
                         "time_filter": "records without usable source date/time excluded when temporal filters are active",
                     },
                     "field_completeness": {
-                        "incidents_without_participation_list": result["missing_participation"],
-                        "incidents_without_incident_type": result["missing_incident_types"],
-                        "incidents_without_property_type": result["missing_property_types"],
+                        "incidents_without_participation_list": result[
+                            "missing_participation"
+                        ],
+                        "incidents_without_incident_type": result[
+                            "missing_incident_types"
+                        ],
+                        "incidents_without_property_type": result[
+                            "missing_property_types"
+                        ],
                         "note": "Summary exports omit these fields. First-arriving apparatus is not a complete participation list; dispatch type is not final incident type.",
                     },
                 },
@@ -864,10 +1025,17 @@ def create_app(path: Path | None = None) -> Dash:
                     dbc.CardHeader(
                         dbc.Row(
                             [
-                                dbc.Col(html.H3("Filter incidents", className="m-0")),
+                                dbc.Col(
+                                    html.H3(
+                                        "Filter incidents", className="m-0"
+                                    )
+                                ),
                                 dbc.Col(
                                     dbc.Button(
-                                        "Reset filters", id="reset", color="warning", outline=True
+                                        "Reset filters",
+                                        id="reset",
+                                        color="warning",
+                                        outline=True,
                                     ),
                                     width="auto",
                                 ),
@@ -897,8 +1065,16 @@ def create_app(path: Path | None = None) -> Dash:
                                         lg=6,
                                         className="mb-3",
                                     ),
-                                    _dropdown("Reported shift", "shifts", options["shifts"]),
-                                    _dropdown("Apparatus", "apparatus", options["apparatus"]),
+                                    _dropdown(
+                                        "Reported shift",
+                                        "shifts",
+                                        options["shifts"],
+                                    ),
+                                    _dropdown(
+                                        "Apparatus",
+                                        "apparatus",
+                                        options["apparatus"],
+                                    ),
                                 ]
                             ),
                             html.Details(
@@ -906,8 +1082,13 @@ def create_app(path: Path | None = None) -> Dash:
                                     html.Summary("More filters"),
                                     dbc.Row(
                                         [
-                                            _hour_dropdown("From hour", "hour-start"),
-                                            _hour_dropdown("To hour (exclusive)", "hour-end"),
+                                            _hour_dropdown(
+                                                "From hour", "hour-start"
+                                            ),
+                                            _hour_dropdown(
+                                                "To hour (exclusive)",
+                                                "hour-end",
+                                            ),
                                             _dropdown(
                                                 "Weekday",
                                                 "weekdays",
@@ -925,12 +1106,16 @@ def create_app(path: Path | None = None) -> Dash:
                                                 "Month",
                                                 "months",
                                                 [
-                                                    datetime(2000, month, 1).strftime("%B")
+                                                    datetime(
+                                                        2000, month, 1
+                                                    ).strftime("%B")
                                                     for month in range(1, 13)
                                                 ],
                                             ),
                                             _dropdown(
-                                                "Season", "seasons", list(settings()["seasons"])
+                                                "Season",
+                                                "seasons",
+                                                list(settings()["seasons"]),
                                             ),
                                             _dropdown(
                                                 "Configured company",
@@ -953,7 +1138,9 @@ def create_app(path: Path | None = None) -> Dash:
                                                 options["property_types"],
                                             ),
                                             _dropdown(
-                                                "Report status", "statuses", options["statuses"]
+                                                "Report status",
+                                                "statuses",
+                                                options["statuses"],
                                             ),
                                             _dropdown(
                                                 "Location (multiple)",
@@ -969,7 +1156,11 @@ def create_app(path: Path | None = None) -> Dash:
                                                     ),
                                                     dcc.Dropdown(
                                                         id="location-detail",
-                                                        options=_options(options["locations"]),
+                                                        options=_options(
+                                                            options[
+                                                                "locations"
+                                                            ]
+                                                        ),
                                                         placeholder="Choose a location",
                                                         className="filter-dropdown",
                                                     ),
@@ -1051,7 +1242,11 @@ def create_app(path: Path | None = None) -> Dash:
             dbc.Row(
                 [
                     dbc.Col(
-                        dbc.Button("Download filtered CSV package", id="export", color="warning"),
+                        dbc.Button(
+                            "Download filtered CSV package",
+                            id="export",
+                            color="warning",
+                        ),
                         width="auto",
                     ),
                     dbc.Col(
@@ -1079,7 +1274,11 @@ def create_app(path: Path | None = None) -> Dash:
                     dcc.Tab(label="Data quality", value="quality"),
                 ],
             ),
-            dcc.Loading(html.Div(id="view-content", className="pt-4"), type="dot", color=ORANGE),
+            dcc.Loading(
+                html.Div(id="view-content", className="pt-4"),
+                type="dot",
+                color=ORANGE,
+            ),
             dcc.Interval(id="refresh", interval=30_000, n_intervals=0),
             html.Footer(
                 "Local exploratory analysis · source-reported timestamps · "
@@ -1094,7 +1293,11 @@ def create_app(path: Path | None = None) -> Dash:
     @app.callback(
         Output("dates", "start_date"),
         Output("dates", "end_date"),
-        *[Output(item, "value") for item in FILTER_IDS[1:] if item != "location-detail"],
+        *[
+            Output(item, "value")
+            for item in FILTER_IDS[1:]
+            if item != "location-detail"
+        ],
         Input("reset", "n_clicks"),
         prevent_initial_call=True,
     )
@@ -1152,7 +1355,11 @@ def create_app(path: Path | None = None) -> Dash:
         *filter_inputs,
     )
     def update_view(
-        view: str, _refresh: int, start_date: str, end_date: str, *control_values: object
+        view: str,
+        _refresh: int,
+        start_date: str,
+        end_date: str,
+        *control_values: object,
     ) -> tuple:
         values = ((start_date, end_date), *control_values)
         try:
@@ -1166,7 +1373,9 @@ def create_app(path: Path | None = None) -> Dash:
         try:
             with closing(connect(path)) as connection:
                 current = load_snapshot(connection)
-                quality = quality_details(connection) if view == "quality" else {}
+                quality = (
+                    quality_details(connection) if view == "quality" else {}
+                )
         except (sqlite3.Error, OSError) as error:
             return (
                 dbc.Alert(f"Database unavailable: {error}", color="danger"),
@@ -1176,17 +1385,27 @@ def create_app(path: Path | None = None) -> Dash:
         incidents, responses = apply_filters(current, filters)
         result = summarize(incidents, responses)
         observed = [
-            row["local_timestamp"][:10] for row in current.incidents if row["local_timestamp"]
+            row["local_timestamp"][:10]
+            for row in current.incidents
+            if row["local_timestamp"]
         ]
-        bounds = f"{min(observed)} to {max(observed)}" if observed else "No dated incidents"
+        bounds = (
+            f"{min(observed)} to {max(observed)}"
+            if observed
+            else "No dated incidents"
+        )
         last_import = (
-            datetime.fromisoformat(current.last_import).strftime("%Y-%m-%d %H:%M UTC")
+            datetime.fromisoformat(current.last_import).strftime(
+                "%Y-%m-%d %H:%M UTC"
+            )
             if current.last_import
             else "Never"
         )
         context = html.Div(
             [
-                html.Span(f"Observed dates: {bounds} · Last import: {last_import}"),
+                html.Span(
+                    f"Observed dates: {bounds} · Last import: {last_import}"
+                ),
                 html.Div(
                     f"{result['missing_participation']:,} selected incidents have no participation "
                     f"list; {result['missing_incident_types']:,} have no final incident type; "
@@ -1219,7 +1438,11 @@ def create_app(path: Path | None = None) -> Dash:
             ]
         )
         metric_cards = [
-            _card("Distinct incidents", f"{result['incidents']:,}", "Reconciled identities"),
+            _card(
+                "Distinct incidents",
+                f"{result['incidents']:,}",
+                "Reconciled identities",
+            ),
             _card(
                 "Unit responses",
                 f"{result['unit_responses']:,}",
@@ -1242,11 +1465,16 @@ def create_app(path: Path | None = None) -> Dash:
             dbc.Col(
                 dbc.Card(
                     [
-                        dbc.CardHeader(html.H4("Incident concentration", className="m-0")),
+                        dbc.CardHeader(
+                            html.H4("Incident concentration", className="m-0")
+                        ),
                         dbc.CardBody(
                             dcc.Graph(
                                 figure=_location_map(result["locations"]),
-                                config={"displaylogo": False, "scrollZoom": False},
+                                config={
+                                    "displaylogo": False,
+                                    "scrollZoom": False,
+                                },
                                 className="summary-map-graph",
                             ),
                             className="p-0",
@@ -1303,7 +1531,11 @@ def create_app(path: Path | None = None) -> Dash:
         State("location-detail", "value"),
     )
     def refresh_locations(
-        _refresh: int, _reset: int, start_date: str, end_date: str, *values_and_selected: object
+        _refresh: int,
+        _reset: int,
+        start_date: str,
+        end_date: str,
+        *values_and_selected: object,
     ) -> tuple:
         *other_values, selected = values_and_selected
         if ctx.triggered_id == "reset":
@@ -1312,14 +1544,24 @@ def create_app(path: Path | None = None) -> Dash:
         try:
             filters = _filter_from_values(values)
         except ValueError:
-            return [], None, "Location selection cleared while filters are invalid."
+            return (
+                [],
+                None,
+                "Location selection cleared while filters are invalid.",
+            )
         try:
             with closing(connect(path)) as connection:
                 current = load_snapshot(connection)
         except (sqlite3.Error, OSError):
-            return [], None, "Database unavailable; check local path and permissions."
+            return (
+                [],
+                None,
+                "Database unavailable; check local path and permissions.",
+            )
         incidents, _ = apply_filters(current, filters)
-        available = {row["location_key"] for row in incidents if row["location_key"]}
+        available = {
+            row["location_key"] for row in incidents if row["location_key"]
+        }
         options = _options(sorted(available))
         if selected and selected not in available:
             return (
@@ -1332,11 +1574,18 @@ def create_app(path: Path | None = None) -> Dash:
     @app.callback(
         Output("download", "data"),
         Input("export", "n_clicks"),
-        *[State(item.component_id, item.component_property) for item in filter_inputs],
+        *[
+            State(item.component_id, item.component_property)
+            for item in filter_inputs
+        ],
         prevent_initial_call=True,
     )
-    def export(_clicks: int, start_date: str, end_date: str, *control_values: object) -> dict:
-        filters = _filter_from_values(((start_date, end_date), *control_values))
+    def export(
+        _clicks: int, start_date: str, end_date: str, *control_values: object
+    ) -> dict:
+        filters = _filter_from_values(
+            ((start_date, end_date), *control_values)
+        )
         with closing(connect(path)) as connection:
             current = load_snapshot(connection)
         payload = export_package(current, filters)

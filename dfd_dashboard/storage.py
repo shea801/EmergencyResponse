@@ -9,11 +9,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from dfd_dashboard.config import database_path, settings
-from dfd_dashboard.source_formats import comparison_values, covers, has_conflict, versions
+from dfd_dashboard.source_formats import (
+    comparison_values,
+    covers,
+    has_conflict,
+    versions,
+)
 
 SCHEMA = Path(__file__).parent / "migrations" / "001_initial.sql"
 MIGRATION_2 = Path(__file__).parent / "migrations" / "002_import_versions.sql"
-MIGRATION_3 = Path(__file__).parent / "migrations" / "003_resolution_watermark.sql"
+MIGRATION_3 = (
+    Path(__file__).parent / "migrations" / "003_resolution_watermark.sql"
+)
 SCHEMA_VERSION = 3
 
 
@@ -30,7 +37,9 @@ def connect(path: Path | None = None) -> sqlite3.Connection:
     ).fetchone():
         connection.executescript(SCHEMA.read_text(encoding="utf-8"))
     version = int(
-        connection.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()[0]
+        connection.execute(
+            "SELECT value FROM metadata WHERE key='schema_version'"
+        ).fetchone()[0]
     )
     if version < 2:
         connection.executescript(MIGRATION_2.read_text(encoding="utf-8"))
@@ -38,7 +47,9 @@ def connect(path: Path | None = None) -> sqlite3.Connection:
         connection.executescript(MIGRATION_3.read_text(encoding="utf-8"))
     if version > SCHEMA_VERSION:
         connection.close()
-        raise RuntimeError(f"Database schema {version} is newer than supported {SCHEMA_VERSION}")
+        raise RuntimeError(
+            f"Database schema {version} is newer than supported {SCHEMA_VERSION}"
+        )
     if path.exists():
         os.chmod(path, 0o600)
     return connection
@@ -46,7 +57,9 @@ def connect(path: Path | None = None) -> sqlite3.Connection:
 
 def data_version(connection: sqlite3.Connection) -> int:
     return int(
-        connection.execute("SELECT value FROM metadata WHERE key='data_version'").fetchone()[0]
+        connection.execute(
+            "SELECT value FROM metadata WHERE key='data_version'"
+        ).fetchone()[0]
     )
 
 
@@ -71,18 +84,22 @@ def rebuild_identity(connection: sqlite3.Connection, identity_key: str) -> str:
             "SELECT * FROM source_rows WHERE id=? AND identity_key=?",
             (resolution[0], identity_key),
         ).fetchone()
-        known = [values for row, values in candidates if row["id"] <= resolution[1]]
+        known = [
+            values for row, values in candidates if row["id"] <= resolution[1]
+        ]
         newer = [
             (row, values)
             for row, values in candidates
-            if row["id"] > resolution[1] and not any(covers(old, values) for old in known)
+            if row["id"] > resolution[1]
+            and not any(covers(old, values) for old in known)
         ]
         candidates = (
             [
                 (
                     selected,
                     comparison_values(
-                        json.loads(selected["raw_json"]), json.loads(selected["normalized_json"])
+                        json.loads(selected["raw_json"]),
+                        json.loads(selected["normalized_json"]),
                     ),
                 ),
                 *newer,
@@ -93,7 +110,9 @@ def rebuild_identity(connection: sqlite3.Connection, identity_key: str) -> str:
     if candidates and not has_conflict(candidates):
         # Both layouts are nested schemas: a compatible detailed export preserves all fields.
         chosen = max(candidates, key=lambda item: len(item[1]))[0]
-    connection.execute("DELETE FROM incidents WHERE identity_key=?", (identity_key,))
+    connection.execute(
+        "DELETE FROM incidents WHERE identity_key=?", (identity_key,)
+    )
     if not chosen:
         return "conflict" if candidates else "invalid"
     value = json.loads(chosen["normalized_json"])
@@ -145,14 +164,19 @@ def rebuild_identity(connection: sqlite3.Connection, identity_key: str) -> str:
 
 
 def resolve_identity(
-    connection: sqlite3.Connection, identity_key: str, source_row_id: int, reason: str
+    connection: sqlite3.Connection,
+    identity_key: str,
+    source_row_id: int,
+    reason: str,
 ) -> None:
     candidate = connection.execute(
         "SELECT id FROM source_rows WHERE id=? AND identity_key=? AND validation_status='accepted'",
         (source_row_id, identity_key),
     ).fetchone()
     if not candidate:
-        raise ValueError("Source row is not an accepted version of this incident identity")
+        raise ValueError(
+            "Source row is not an accepted version of this incident identity"
+        )
     if not reason.strip():
         raise ValueError("Resolution reason is required")
     connection.execute("BEGIN IMMEDIATE")

@@ -6,8 +6,18 @@ from pathlib import Path
 
 import pytest
 
-from dfd_dashboard.analytics import Filters, apply_filters, load_snapshot, summary
-from dfd_dashboard.dashboard import _filter_from_values, _location_map, create_app, export_package
+from dfd_dashboard.analytics import (
+    Filters,
+    apply_filters,
+    load_snapshot,
+    summary,
+)
+from dfd_dashboard.dashboard import (
+    _filter_from_values,
+    _location_map,
+    create_app,
+    export_package,
+)
 from dfd_dashboard.ingestion import import_file
 from dfd_dashboard.storage import connect
 
@@ -31,7 +41,11 @@ def sample(tmp_path: Path):
     write_csv(
         csv_path,
         [
-            row("A-1", "Dec 31, 2025 23:30:00", **{"INCIDENT LOCATION": "1 SAFE ST"}),
+            row(
+                "A-1",
+                "Dec 31, 2025 23:30:00",
+                **{"INCIDENT LOCATION": "1 SAFE ST"},
+            ),
             row(
                 "A-2",
                 "Jan 1, 2026 02:00:00",
@@ -55,7 +69,13 @@ def sample(tmp_path: Path):
             ),
         ],
     )
-    coords = {"1 SAFE ST": {"latitude": 41.4, "longitude": -73.45, "validation_status": "in_area"}}
+    coords = {
+        "1 SAFE ST": {
+            "latitude": 41.4,
+            "longitude": -73.45,
+            "validation_status": "in_area",
+        }
+    }
     with connect(path) as connection:
         import_file(connection, csv_path, coords=coords)
         snapshot = load_snapshot(connection)
@@ -70,34 +90,50 @@ def test_counts_and_filters(sample) -> None:
     assert summary(snapshot, Filters())["mapping_percent"] == 66.7
     assert summary(snapshot, Filters())["locations"][0]["count"] == 2
     types = summary(snapshot, Filters())["incident_types"]
-    assert [(item["label"], item["count"], item["share"]) for item in types] == [
+    assert [
+        (item["label"], item["count"], item["share"]) for item in types
+    ] == [
         ("Alarm", 2, 66.7),
         ("Medical", 1, 33.3),
     ]
     assert (
-        summary(snapshot, Filters(start_date="2026-01-01", end_date="2026-01-01"))["incidents"] == 2
+        summary(
+            snapshot, Filters(start_date="2026-01-01", end_date="2026-01-01")
+        )["incidents"]
+        == 2
     )
     overnight = Filters(hour_start=22, hour_end=6)
-    assert {i["identity_key"] for i in apply_filters(snapshot, overnight)[0]} == {"A-1", "A-2"}
+    assert {
+        i["identity_key"] for i in apply_filters(snapshot, overnight)[0]
+    } == {"A-1", "A-2"}
     assert summary(snapshot, Filters(seasons=("Winter",)))["incidents"] == 3
     season_year = summary(snapshot, Filters())["temporal"]["season"]
-    assert [(item["label"], item["count"], item["share"]) for item in season_year] == [
-        ("Winter 2026", 3, 100.0)
-    ]
+    assert [
+        (item["label"], item["count"], item["share"]) for item in season_year
+    ] == [("Winter 2026", 3, 100.0)]
     selected = Filters(apparatus=("Engine 22",), shifts=("A",))
     assert summary(snapshot, selected)["incidents"] == 2
     assert summary(snapshot, selected)["unit_responses"] == 2
     first = Filters(apparatus=("Engine 22",), mode="first_arrival")
     assert summary(snapshot, first)["incidents"] == 1
     assert summary(snapshot, first)["unit_responses"] == 3
-    assert summary(snapshot, Filters(location_detail="1 SAFE ST"))["incidents"] == 2
     assert (
-        summary(snapshot, Filters(locations=("2 SAFE ST",), location_detail="1 SAFE ST"))[
-            "incidents"
-        ]
+        summary(snapshot, Filters(location_detail="1 SAFE ST"))["incidents"]
+        == 2
+    )
+    assert (
+        summary(
+            snapshot,
+            Filters(locations=("2 SAFE ST",), location_detail="1 SAFE ST"),
+        )["incidents"]
         == 0
     )
-    assert summary(snapshot, Filters(incident_types=("Medical",), shifts=("B",)))["incidents"] == 1
+    assert (
+        summary(snapshot, Filters(incident_types=("Medical",), shifts=("B",)))[
+            "incidents"
+        ]
+        == 1
+    )
     with pytest.raises(ValueError, match="Identical"):
         Filters(hour_start=8, hour_end=8)
 
@@ -145,29 +181,59 @@ def test_export_and_dash_shell(sample) -> None:
         metadata = json.loads(archive.read("metadata.json"))
         assert metadata["data_version"] == snapshot.version
         assert metadata["filters"]["apparatus"] == ["Engine 22"]
-        assert archive.read("incidents.csv").decode("utf-8-sig").count("A-") == 2
-        assert archive.read("unit_responses.csv").decode("utf-8-sig").count("A-") == 2
+        assert (
+            archive.read("incidents.csv").decode("utf-8-sig").count("A-") == 2
+        )
+        assert (
+            archive.read("unit_responses.csv").decode("utf-8-sig").count("A-")
+            == 2
+        )
     app = create_app(path)
     client = app.server.test_client()
     assert client.get("/").status_code == 200
     layout_response = client.get("/_dash-layout")
     assert layout_response.status_code == 200
     layout = layout_response.json
-    advanced = next(node for node in _walk(layout) if node.get("type") == "Details")
+    advanced = next(
+        node for node in _walk(layout) if node.get("type") == "Details"
+    )
     assert advanced["props"].get("open") is not True
-    advanced_ids = {node.get("props", {}).get("id") for node in _walk(advanced)}
-    assert {"hour-start", "hour-end", "incident-types", "location-detail"} <= advanced_ids
+    advanced_ids = {
+        node.get("props", {}).get("id") for node in _walk(advanced)
+    }
+    assert {
+        "hour-start",
+        "hour-end",
+        "incident-types",
+        "location-detail",
+    } <= advanced_ids
     assert "apparatus" not in advanced_ids
-    assert "apparatus" in {node.get("props", {}).get("id") for node in _walk(layout)}
+    assert "apparatus" in {
+        node.get("props", {}).get("id") for node in _walk(layout)
+    }
     assert client.get("/_dash-dependencies").status_code == 200
     assert client.get("/assets/style.css").status_code == 200
-    key = next(key for key in app.callback_map if "view-content.children" in key)
+    key = next(
+        key for key in app.callback_map if "view-content.children" in key
+    )
     callback = app.callback_map[key]
-    for view in ("overview", "types", "temporal", "units", "locations", "detail", "quality"):
+    for view in (
+        "overview",
+        "types",
+        "temporal",
+        "units",
+        "locations",
+        "detail",
+        "quality",
+    ):
         inputs = [
             {
                 **item,
-                "value": {"view": view, "refresh": 0, "unit-mode": "participation"}.get(item["id"]),
+                "value": {
+                    "view": view,
+                    "refresh": 0,
+                    "unit-mode": "participation",
+                }.get(item["id"]),
             }
             for item in callback["inputs"]
         ]
@@ -188,11 +254,17 @@ def test_export_and_dash_shell(sample) -> None:
         assert response.status_code == 200, (view, response.data[:200])
         if view == "overview":
             cards = response.json["response"]["cards"]["children"]
-            graphs = [node for node in _walk(cards) if node.get("type") == "Graph"]
+            graphs = [
+                node for node in _walk(cards) if node.get("type") == "Graph"
+            ]
             assert len(graphs) == 1
-            assert graphs[0]["props"]["figure"]["data"][0]["type"] == "densitymap"
+            assert (
+                graphs[0]["props"]["figure"]["data"][0]["type"] == "densitymap"
+            )
 
-    location_key = next(key for key in app.callback_map if "location-message.children" in key)
+    location_key = next(
+        key for key in app.callback_map if "location-message.children" in key
+    )
     location_callback = app.callback_map[location_key]
     location_inputs = [
         {
@@ -215,7 +287,13 @@ def test_export_and_dash_shell(sample) -> None:
                 {"id": "location-message", "property": "children"},
             ],
             "inputs": location_inputs,
-            "state": [{"id": "location-detail", "property": "value", "value": "1 SAFE ST"}],
+            "state": [
+                {
+                    "id": "location-detail",
+                    "property": "value",
+                    "value": "1 SAFE ST",
+                }
+            ],
             "changedPropIds": ["incident-types.value"],
         },
     )
@@ -224,7 +302,9 @@ def test_export_and_dash_shell(sample) -> None:
     assert location_output["location-detail"]["value"] is None
     assert "cleared" in location_output["location-message"]["children"]
 
-    options_key = next(key for key in app.callback_map if "incident-types.options" in key)
+    options_key = next(
+        key for key in app.callback_map if "incident-types.options" in key
+    )
     option_ids = [
         "shifts",
         "apparatus",
@@ -239,24 +319,46 @@ def test_export_and_dash_shell(sample) -> None:
         "/_dash-update-component",
         json={
             "output": options_key,
-            "outputs": [{"id": item, "property": "options"} for item in option_ids],
-            "inputs": [{"id": "refresh", "property": "n_intervals", "value": 0}],
+            "outputs": [
+                {"id": item, "property": "options"} for item in option_ids
+            ],
+            "inputs": [
+                {"id": "refresh", "property": "n_intervals", "value": 0}
+            ],
             "state": [],
             "changedPropIds": ["refresh.n_intervals"],
         },
     )
     assert options_response.status_code == 200
     assert {
-        item["value"] for item in options_response.json["response"]["incident-types"]["options"]
+        item["value"]
+        for item in options_response.json["response"]["incident-types"][
+            "options"
+        ]
     } == {"Alarm", "Medical"}
 
 
 def test_heatmap_uses_weighted_incidents_and_roads() -> None:
     figure = _location_map(
         [
-            {"label": "1 SAFE ST", "latitude": 41.4, "longitude": -73.45, "count": 3},
-            {"label": "2 SAFE ST", "latitude": 41.41, "longitude": -73.44, "count": 1},
-            {"label": "UNLOCATED", "latitude": None, "longitude": None, "count": 7},
+            {
+                "label": "1 SAFE ST",
+                "latitude": 41.4,
+                "longitude": -73.45,
+                "count": 3,
+            },
+            {
+                "label": "2 SAFE ST",
+                "latitude": 41.41,
+                "longitude": -73.44,
+                "count": 1,
+            },
+            {
+                "label": "UNLOCATED",
+                "latitude": None,
+                "longitude": None,
+                "count": 7,
+            },
         ]
     )
     assert figure.layout.map.style == "open-street-map"
@@ -286,11 +388,15 @@ def test_empty_database_and_spreadsheet_safe_export(tmp_path: Path) -> None:
     import io
     import zipfile
 
-    with zipfile.ZipFile(io.BytesIO(export_package(snapshot, Filters()))) as archive:
+    with zipfile.ZipFile(
+        io.BytesIO(export_package(snapshot, Filters()))
+    ) as archive:
         assert "'=2+2" in archive.read("incidents.csv").decode("utf-8-sig")
 
 
-def test_summary_export_discloses_missing_fields_without_personnel(tmp_path: Path) -> None:
+def test_summary_export_discloses_missing_fields_without_personnel(
+    tmp_path: Path,
+) -> None:
     import io
     import json
     import zipfile
@@ -300,7 +406,9 @@ def test_summary_export_discloses_missing_fields_without_personnel(tmp_path: Pat
     with connect(tmp_path / "test.sqlite3") as connection:
         import_file(connection, source, coords={})
         snapshot = load_snapshot(connection)
-    with zipfile.ZipFile(io.BytesIO(export_package(snapshot, Filters()))) as archive:
+    with zipfile.ZipFile(
+        io.BytesIO(export_package(snapshot, Filters()))
+    ) as archive:
         metadata = json.loads(archive.read("metadata.json"))
         coverage = metadata["field_completeness"]
         assert coverage["incidents_without_participation_list"] == 1
@@ -311,4 +419,7 @@ def test_summary_export_discloses_missing_fields_without_personnel(tmp_path: Pat
         assert "Example Officer" not in incidents
         assert "Example User" not in incidents
         assert "OFFICER IN CHARGE" not in incidents
-        assert archive.read("unit_responses.csv").decode("utf-8-sig").count("S-1") == 0
+        assert (
+            archive.read("unit_responses.csv").decode("utf-8-sig").count("S-1")
+            == 0
+        )

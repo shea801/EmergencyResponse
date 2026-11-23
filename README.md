@@ -38,4 +38,4 @@ OpenStreetMap supplies road tiles and Bootstrap supplies a stylesheet. Neither r
 .venv/bin/python -m ruff format --check .
 ```
 
-The latest [validation record](docs/validation.md) reports 18 passing tests and a browser render of the synthetic map. Existing Ruff cleanup remains open.
+The latest [validation record](docs/validation.md) reports 18 passing tests and a browser render of the synthetic map. Ruff lint and format checks pass.

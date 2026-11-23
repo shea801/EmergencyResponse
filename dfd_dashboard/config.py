@@ -36,7 +36,9 @@ def location_key(value: object) -> str | None:
     return re.sub(r"[^A-Z0-9]+", " ", value.upper()).strip() if value else None
 
 
-def unit_label(value: object, aliases: dict[str, str] | None = None) -> tuple[str | None, bool]:
+def unit_label(
+    value: object, aliases: dict[str, str] | None = None
+) -> tuple[str | None, bool]:
     value = clean(value)
     if not value:
         return None, False

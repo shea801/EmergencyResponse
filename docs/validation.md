@@ -6,4 +6,4 @@ The synthetic fixture imported **240 invented incidents** at **24 invented locat
 
 A headless Chrome capture with software WebGL showed the synthetic banner, road tiles, and navy heat spots: [demo screenshot](screenshots/portfolio-demo-2026-11-22.png). A capture without software WebGL did not show the density layer. Browser review on the intended machine remains open.
 
-`git diff --check` passed. Ruff currently reports four existing import-order findings and eight files needing formatting. Python 3.11 execution has not been verified.
+`git diff --check`, Ruff lint, and Ruff format checks pass. Python 3.11 execution has not been verified.

@@ -14,7 +14,13 @@ from fnmatch import fnmatch
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from dfd_dashboard.config import ROOT, clean, location_key, settings, unit_label
+from dfd_dashboard.config import (
+    ROOT,
+    clean,
+    location_key,
+    settings,
+    unit_label,
+)
 from dfd_dashboard.source_formats import (
     FILE_PATTERNS,
     canonical_row,
@@ -27,12 +33,18 @@ from dfd_dashboard.source_formats import (
 from dfd_dashboard.source_formats import (
     REQUIRED_COLUMNS as REQUIRED_COLUMNS,
 )
-from dfd_dashboard.storage import SCHEMA_VERSION, bump_version, rebuild_identity
+from dfd_dashboard.storage import (
+    SCHEMA_VERSION,
+    bump_version,
+    rebuild_identity,
+)
 
 IMPORTER_VERSION = "1.1.0"
 
 
-def parse_timestamp(raw: str | None) -> tuple[str | None, str | None, str | None]:
+def parse_timestamp(
+    raw: str | None,
+) -> tuple[str | None, str | None, str | None]:
     if not raw:
         return None, None, "missing timestamp"
     try:
@@ -44,7 +56,9 @@ def parse_timestamp(raw: str | None) -> tuple[str | None, str | None, str | None
             return None, None, "malformed timestamp"
     if local.tzinfo is not None:
         return (
-            local.astimezone(ZoneInfo(settings()["timezone"])).replace(tzinfo=None).isoformat(),
+            local.astimezone(ZoneInfo(settings()["timezone"]))
+            .replace(tzinfo=None)
+            .isoformat(),
             local.astimezone(timezone.utc).isoformat(),
             None,
         )
@@ -86,7 +100,9 @@ def normalize_row(raw: dict) -> tuple[dict | None, list[str]]:
     if first and not first_mapped:
         issues.append(f"unmapped first-arriving apparatus: {first}")
     if "APPARATUS" in raw and first and first.upper() not in units:
-        issues.append("first-arriving apparatus absent from participation list")
+        issues.append(
+            "first-arriving apparatus absent from participation list"
+        )
     location = clean(raw.get("INCIDENT LOCATION"))
     result = {
         "identity_key": identity,
@@ -133,29 +149,48 @@ def coordinate_index(path: Path | None = None) -> dict[str, dict]:
             grouped[key].append((lat, lon))
     result = {}
     for key, values in grouped.items():
-        lat, lon = statistics.median(v[0] for v in values), statistics.median(v[1] for v in values)
+        lat, lon = (
+            statistics.median(v[0] for v in values),
+            statistics.median(v[1] for v in values),
+        )
         # Coordinate disagreements larger than roughly 60 m are withheld for review.
-        consistent = all(abs(a - lat) <= 0.0005 and abs(b - lon) <= 0.0007 for a, b in values)
+        consistent = all(
+            abs(a - lat) <= 0.0005 and abs(b - lon) <= 0.0007
+            for a, b in values
+        )
         in_area = 41.25 <= lat <= 41.55 and -73.65 <= lon <= -73.30
         result[key] = {
             "latitude": lat if consistent else None,
             "longitude": lon if consistent else None,
             "validation_status": (
-                "cache_conflict" if not consistent else "in_area" if in_area else "out_of_area"
+                "cache_conflict"
+                if not consistent
+                else "in_area"
+                if in_area
+                else "out_of_area"
             ),
         }
     return result
 
 
-def import_file(connection: sqlite3.Connection, path: Path, coords: dict | None = None) -> dict:
+def import_file(
+    connection: sqlite3.Connection, path: Path, coords: dict | None = None
+) -> dict:
     path = path.resolve()
     blob = path.read_bytes()
     file_hash = hashlib.sha256(blob).hexdigest()
     try:
         content = blob.decode("utf-8-sig")
     except UnicodeDecodeError as error:
-        _record_rejection(connection, path.name, file_hash, "expected UTF-8/UTF-8-SIG encoding")
-        raise ValueError(f"{path.name}: expected UTF-8/UTF-8-SIG encoding") from error
+        _record_rejection(
+            connection,
+            path.name,
+            file_hash,
+            "expected UTF-8/UTF-8-SIG encoding",
+        )
+        raise ValueError(
+            f"{path.name}: expected UTF-8/UTF-8-SIG encoding"
+        ) from error
     import io
 
     reader = csv.DictReader(io.StringIO(content, newline=""))
@@ -188,7 +223,10 @@ def import_file(connection: sqlite3.Connection, path: Path, coords: dict | None 
     }
     connection.execute("BEGIN IMMEDIATE")
     try:
-        before = {row[0] for row in connection.execute("SELECT identity_key FROM incidents")}
+        before = {
+            row[0]
+            for row in connection.execute("SELECT identity_key FROM incidents")
+        }
         affected = set()
         existing_versions = {}
         for number, raw in enumerate(rows, start=2):
@@ -201,7 +239,9 @@ def import_file(connection: sqlite3.Connection, path: Path, coords: dict | None 
                 continue
             invalid_shape = None in raw
             normalized, issues = (
-                normalize_row(raw) if not invalid_shape else (None, ["extra CSV fields"])
+                normalize_row(raw)
+                if not invalid_shape
+                else (None, ["extra CSV fields"])
             )
             identity = (
                 normalized["identity_key"]
@@ -210,9 +250,14 @@ def import_file(connection: sqlite3.Connection, path: Path, coords: dict | None 
             )
             fingerprint_value = normalized
             if normalized and unavailable:
-                fingerprint_value = {**normalized, "unavailable_columns": unavailable}
+                fingerprint_value = {
+                    **normalized,
+                    "unavailable_columns": unavailable,
+                }
             fingerprint = (
-                hashlib.sha256(json.dumps(fingerprint_value, sort_keys=True).encode()).hexdigest()
+                hashlib.sha256(
+                    json.dumps(fingerprint_value, sort_keys=True).encode()
+                ).hexdigest()
                 if normalized
                 else None
             )
@@ -229,7 +274,9 @@ def import_file(connection: sqlite3.Connection, path: Path, coords: dict | None 
                     "duplicates"
                     if any(covers(values, incoming) for values in existing)
                     else "conflict_versions"
-                    if any(not compatible(values, incoming) for values in existing)
+                    if any(
+                        not compatible(values, incoming) for values in existing
+                    )
                     else "enrichments"
                     if existing
                     else "new_candidates"
@@ -249,7 +296,9 @@ def import_file(connection: sqlite3.Connection, path: Path, coords: dict | None 
                     identity,
                     fingerprint,
                     json.dumps(raw, ensure_ascii=False),
-                    json.dumps(normalized, ensure_ascii=False) if normalized else None,
+                    json.dumps(normalized, ensure_ascii=False)
+                    if normalized
+                    else None,
                     "accepted" if normalized else "invalid",
                     json.dumps(issues),
                 ),
@@ -283,10 +332,13 @@ def import_file(connection: sqlite3.Connection, path: Path, coords: dict | None 
             rebuild_identity(connection, identity)
         if affected:
             bump_version(connection)
-        report["canonical_total"] = connection.execute("SELECT count(*) FROM incidents").fetchone()[
-            0
-        ]
-        after = {row[0] for row in connection.execute("SELECT identity_key FROM incidents")}
+        report["canonical_total"] = connection.execute(
+            "SELECT count(*) FROM incidents"
+        ).fetchone()[0]
+        after = {
+            row[0]
+            for row in connection.execute("SELECT identity_key FROM incidents")
+        }
         report["canonical_added"] = len(after - before)
         report["canonical_removed_due_to_conflict"] = len(before - after)
         report["unresolved_identities"] = unresolved_count(connection)
@@ -359,13 +411,18 @@ def import_path(connection: sqlite3.Connection, path: Path) -> list[dict]:
         sorted(
             file
             for file in path.iterdir()
-            if file.is_file() and any(fnmatch(file.name.casefold(), pat) for pat in FILE_PATTERNS)
+            if file.is_file()
+            and any(
+                fnmatch(file.name.casefold(), pat) for pat in FILE_PATTERNS
+            )
         )
         if path.is_dir()
         else [path]
     )
     if not files:
-        raise ValueError(f"No Incident Report*.csv or incident_reports*.csv files found in {path}")
+        raise ValueError(
+            f"No Incident Report*.csv or incident_reports*.csv files found in {path}"
+        )
     coords = coordinate_index()
     return [import_file(connection, file, coords) for file in files]
 
@@ -376,7 +433,9 @@ def refresh_coordinates(connection: sqlite3.Connection) -> dict:
     connection.execute("BEGIN IMMEDIATE")
     try:
         matched = 0
-        for row in connection.execute("SELECT location_key FROM locations").fetchall():
+        for row in connection.execute(
+            "SELECT location_key FROM locations"
+        ).fetchall():
             key = row["location_key"]
             coordinate = coords.get(key)
             if coordinate:
@@ -387,9 +446,13 @@ def refresh_coordinates(connection: sqlite3.Connection) -> dict:
                 (
                     coordinate["latitude"] if coordinate else None,
                     coordinate["longitude"] if coordinate else None,
-                    "existing cache; provenance unverified" if coordinate else None,
+                    "existing cache; provenance unverified"
+                    if coordinate
+                    else None,
                     "exact normalized address" if coordinate else None,
-                    coordinate["validation_status"] if coordinate else "missing",
+                    coordinate["validation_status"]
+                    if coordinate
+                    else "missing",
                     key,
                 ),
             )
